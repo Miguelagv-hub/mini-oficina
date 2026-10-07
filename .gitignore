@@ -1,0 +1,7 @@
+# Configuracion local con credenciales: nunca se sube.
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
