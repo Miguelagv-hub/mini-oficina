@@ -14,9 +14,29 @@ def conectar():
         password=os.environ["DB_PASSWORD"],
     )
 
+def crear_tabla():
+    with conectar() as conexion, conexion.cursor() as cursor:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS tareas (
+                id SERIAL PRIMARY KEY,
+                titulo TEXT NOT NULL,
+                hecha BOOLEAN NOT NULL DEFAULT FALSE,
+                creada TIMESTAMPTZ NOT NULL DEFAULT now()
+            )
+        """)
+
+crear_tabla()
+
 @aplicacion.get("/")
 def inicio(peticion: Request):
-    return plantillas.TemplateResponse(peticion, "index.html", {"titulo": "Mini-Oficina"})
+    with conectar() as conexion, conexion.cursor() as cursor:
+        cursor.execute("SELECT id, titulo, hecha FROM tareas ORDER BY creada DESC")
+        tareas = cursor.fetchall()
+    return plantillas.TemplateResponse(
+        peticion,
+        "index.html",
+        {"titulo": "Mini-Oficina", "tareas": tareas}
+    )
 
 @aplicacion.get("/healthz")
 def salud():
