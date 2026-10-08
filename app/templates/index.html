@@ -1,17 +1,275 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ titulo }}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini-Oficina | Panel de Control</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1c2733; line-height: 1.6; }
-    h1 { color: #0379B5; }
-    .ok { background: #eefaf0; border-left: 4px solid #2e9e5b; padding: 10px 14px; border-radius: 4px; }
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #dc2626;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 2rem;
+    }
+    h1 {
+      margin: 0 0 0.5rem 0;
+      color: #111827;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: 350px 1fr;
+      }
+    }
+    .card {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border);
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    button.btn-primary {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      width: 100%;
+    }
+    button.btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    .doc-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .doc-item:last-child {
+      border-bottom: none;
+    }
+    .badge {
+      display: inline-block;
+      background-color: #e0e7ff;
+      color: #3730a3;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+    }
+    .doc-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0.25rem 0;
+    }
+    .doc-content {
+      color: #4b5563;
+      font-size: 0.9rem;
+      margin: 0.25rem 0;
+    }
+    .doc-date {
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+    .btn-delete {
+      background-color: transparent;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .btn-delete:hover {
+      background-color: var(--danger);
+      color: white;
+    }
+    #lista-vacia {
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
-  <h1>{{ titulo }}</h1>
-  <p class="ok">La aplicacion esta viva. Si ves esto, Docker funciona.</p>
+
+  <div class="container">
+    <header>
+      <h1>🗄️ Mini-Oficina Digital</h1>
+      <p style="color: var(--muted); margin: 0;">Gestión de documentación interna conectada a PostgreSQL</p>
+    </header>
+
+    <div class="grid">
+      <!-- Formulario para crear documentos -->
+      <section class="card">
+        <h2>Nuevo Documento</h2>
+        <form id="form-documento">
+          <div class="form-group">
+            <label for="titulo">Título</label>
+            <input type="text" id="titulo" placeholder="Ej: Contrato de servicios" required>
+          </div>
+
+          <div class="form-group">
+            <label for="categoria">Categoría</label>
+            <select id="categoria">
+              <option value="legal">Legal</option>
+              <option value="facturas">Facturas</option>
+              <option value="recursos humanos">Recursos Humanos</option>
+              <option value="general" selected>General</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="contenido">Contenido</label>
+            <textarea id="contenido" placeholder="Detalles del documento..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary">Guardar en Oficina</button>
+        </form>
+      </section>
+
+      <!-- Listado dinámico de documentos -->
+      <section class="card">
+        <h2>Documentos Registrados</h2>
+        <div id="contenedor-documentos">
+          <p id="lista-vacia">No hay documentos registrados todavía.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = '/api/documentos';
+
+    // Función para obtener y pintar todos los documentos
+    async function cargarDocumentos() {
+      const contenedor = document.getElementById('contenedor-documentos');
+      try {
+        const respuesta = await fetch(API_URL);
+        const documentos = await respuesta.json();
+
+        if (documentos.length === 0) {
+          contenedor.innerHTML = '<p id="lista-vacia">No hay documentos registrados todavía.</p>';
+          return;
+        }
+
+        contenedor.innerHTML = documentos.map(doc => `
+          <article class="doc-item">
+            <div>
+              <span class="badge">${doc.categoria}</span>
+              <div class="doc-title">${doc.titulo}</div>
+              <div class="doc-content">${doc.contenido}</div>
+              <div class="doc-date">Creado: ${new Date(doc.creado_en).toLocaleString()}</div>
+            </div>
+            <button class="btn-delete" onclick="borrarDocumento(${doc.id})">Eliminar</button>
+          </article>
+        `).join('');
+      } catch (error) {
+        console.error('Error al cargar documentos:', error);
+      }
+    }
+
+    // Función para enviar nuevo documento
+    document.getElementById('form-documento').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nuevoDoc = {
+        titulo: document.getElementById('titulo').value,
+        categoria: document.getElementById('categoria').value,
+        contenido: document.getElementById('contenido').value
+      };
+
+      try {
+        const respuesta = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nuevoDoc)
+        });
+
+        if (respuesta.ok) {
+          document.getElementById('form-documento').reset();
+          cargarDocumentos(); // Refresca la lista
+        }
+      } catch (error) {
+        console.error('Error al guardar documento:', error);
+      }
+    });
+
+    // Función para borrar documento
+    async function borrarDocumento(id) {
+      if (!confirm('¿Seguro que deseas eliminar este documento?')) return;
+
+      try {
+        const respuesta = await fetch(`${API_URL}/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (respuesta.ok) {
+          cargarDocumentos(); // Refresca la lista
+        }
+      } catch (error) {
+        console.error('Error al eliminar documento:', error);
+      }
+    }
+
+    // Carga inicial
+    cargarDocumentos();
+  </script>
 </body>
 </html>
