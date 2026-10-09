@@ -33,10 +33,20 @@ def inicio(peticion: Request):
     with conectar() as conexion, conexion.cursor() as cursor:
         cursor.execute("SELECT id, titulo, hecha FROM tareas ORDER BY creada DESC")
         tareas = cursor.fetchall()
+    
+    # Lógica del contador exigida por el tutor
+    total = len(tareas)
+    pendientes = sum(1 for tarea in tareas if not tarea[2])
+
     return plantillas.TemplateResponse(
         peticion,
         "index.html",
-        {"titulo": "Mini-Oficina", "tareas": tareas}
+        {
+            "titulo": "Mini-Oficina",
+            "tareas": tareas,
+            "total": total,
+            "pendientes": pendientes
+        }
     )
 
 @aplicacion.post("/tareas")
@@ -63,12 +73,12 @@ def salud():
         cursor.execute("SELECT 1")
         cursor.fetchone()
     return {"estado": "ok", "base_de_datos": "ok"}
-```[cite: 26]
+```[cite: 27]
 
 ---
 
-### 2. `app/templates/index.html`
-Copia este contenido completo y pégalo en tu archivo `app/templates/index.html` (incluye el botón de borrar al lado de cada tarea)[cite: 14, 26]:
+### 3. Actualiza `app/templates/index.html`
+Copia este código y guárdalo en **`app/templates/index.html`**. Añade el contador visible en pantalla justo debajo del formulario[cite: 12, 27]:
 
 ```html
 <!doctype html>
@@ -80,9 +90,10 @@ Copia este contenido completo y pégalo en tu archivo `app/templates/index.html`
   <style>
     body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1c2733; }
     h1 { color: #0379B5; }
-    form { display: flex; gap: 8px; margin-bottom: 24px; }
+    form { display: flex; gap: 8px; margin-bottom: 12px; }
     input[type="text"] { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; }
     button { padding: 8px 16px; background-color: #0379B5; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .contador { font-size: 14px; color: #555; margin-bottom: 24px; font-weight: bold; }
     ul { list-style: none; padding: 0; }
     li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e1e4e8; }
     .acciones { display: flex; gap: 6px; }
@@ -98,6 +109,10 @@ Copia este contenido completo y pégalo en tu archivo `app/templates/index.html`
     <input type="text" name="titulo" placeholder="Que hay que hacer..." required>
     <button type="submit">Anadir</button>
   </form>
+
+  <div class="contador">
+    {{ pendientes }} pendientes de {{ total }}
+  </div>
 
   {% if not tareas %}
     <p>No hay tareas todavía.</p>
