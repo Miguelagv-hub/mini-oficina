@@ -51,9 +51,74 @@ def marcar_hecha(id_tarea: int):
         cursor.execute("UPDATE tareas SET hecha = TRUE WHERE id = %s", (id_tarea,))
     return RedirectResponse("/", status_code=303)
 
+@aplicacion.post("/tareas/{id_tarea}/borrar")
+def borrar_tarea(id_tarea: int):
+    with conectar() as conexion, conexion.cursor() as cursor:
+        cursor.execute("DELETE FROM tareas WHERE id = %s", (id_tarea,))
+    return RedirectResponse("/", status_code=303)
+
 @aplicacion.get("/healthz")
 def salud():
     with conectar() as conexion, conexion.cursor() as cursor:
         cursor.execute("SELECT 1")
         cursor.fetchone()
     return {"estado": "ok", "base_de_datos": "ok"}
+```[cite: 26]
+
+---
+
+### 2. `app/templates/index.html`
+Copia este contenido completo y pégalo en tu archivo `app/templates/index.html` (incluye el botón de borrar al lado de cada tarea)[cite: 14, 26]:
+
+```html
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ titulo }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1c2733; }
+    h1 { color: #0379B5; }
+    form { display: flex; gap: 8px; margin-bottom: 24px; }
+    input[type="text"] { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 8px 16px; background-color: #0379B5; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e1e4e8; }
+    .acciones { display: flex; gap: 6px; }
+    .tachada { text-decoration: line-through; color: #888; }
+    .btn-hecha { background-color: #2e9e5b; padding: 4px 8px; font-size: 12px; }
+    .btn-borrar { background-color: #d9534f; padding: 4px 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>{{ titulo }}</h1>
+  
+  <form method="post" action="/tareas">
+    <input type="text" name="titulo" placeholder="Que hay que hacer..." required>
+    <button type="submit">Anadir</button>
+  </form>
+
+  {% if not tareas %}
+    <p>No hay tareas todavía.</p>
+  {% else %}
+    <ul>
+      {% for tarea in tareas %}
+        <li>
+          <span class="{% if tarea[2] %}tachada{% endif %}">{{ tarea[1] }}</span>
+          <div class="acciones">
+            {% if not tarea[2] %}
+              <form method="post" action="/tareas/{{ tarea[0] }}/hecha" style="margin: 0;">
+                <button type="submit" class="btn-hecha">Hecha</button>
+              </form>
+            {% endif %}
+            <form method="post" action="/tareas/{{ tarea[0] }}/borrar" style="margin: 0;">
+              <button type="submit" class="btn-borrar">Borrar</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</body>
+</html>
