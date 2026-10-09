@@ -45,6 +45,12 @@ def crear_tarea(titulo: str = Form(...)):
         cursor.execute("INSERT INTO tareas (titulo) VALUES (%s)", (titulo,))
     return RedirectResponse("/", status_code=303)
 
+@aplicacion.post("/tareas/{id_tarea}/hecha")
+def marcar_hecha(id_tarea: int):
+    with conectar() as conexion, conexion.cursor() as cursor:
+        cursor.execute("UPDATE tareas SET hecha = TRUE WHERE id = %s", (id_tarea,))
+    return RedirectResponse("/", status_code=303)
+
 @aplicacion.get("/healthz")
 def salud():
     with conectar() as conexion, conexion.cursor() as cursor:

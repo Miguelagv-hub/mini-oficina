@@ -1,5 +1,4 @@
-﻿Set-Content -Path "app\templates\index.html" -Value @"
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -12,7 +11,9 @@
     input[type="text"] { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; }
     button { padding: 8px 16px; background-color: #0379B5; color: white; border: none; border-radius: 4px; cursor: pointer; }
     ul { list-style: none; padding: 0; }
-    li { padding: 8px 0; border-bottom: 1px solid #e1e4e8; }
+    li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e1e4e8; }
+    .tachada { text-decoration: line-through; color: #888; }
+    .btn-hecha { background-color: #2e9e5b; padding: 4px 8px; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -28,7 +29,14 @@
   {% else %}
     <ul>
       {% for tarea in tareas %}
-        <li>{{ tarea[1] }}</li>
+        <li>
+          <span class="{% if tarea[2] %}tachada{% endif %}">{{ tarea[1] }}</span>
+          {% if not tarea[2] %}
+            <form method="post" action="/tareas/{{ tarea[0] }}/hecha" style="margin: 0;">
+              <button type="submit" class="btn-hecha">Hecha</button>
+            </form>
+          {% endif %}
+        </li>
       {% endfor %}
     </ul>
   {% endif %}
