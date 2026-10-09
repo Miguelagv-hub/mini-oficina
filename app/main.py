@@ -1,6 +1,7 @@
-import os
+﻿import os
 import psycopg
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 aplicacion = FastAPI()
@@ -37,6 +38,12 @@ def inicio(peticion: Request):
         "index.html",
         {"titulo": "Mini-Oficina", "tareas": tareas}
     )
+
+@aplicacion.post("/tareas")
+def crear_tarea(titulo: str = Form(...)):
+    with conectar() as conexion, conexion.cursor() as cursor:
+        cursor.execute("INSERT INTO tareas (titulo) VALUES (%s)", (titulo,))
+    return RedirectResponse("/", status_code=303)
 
 @aplicacion.get("/healthz")
 def salud():
